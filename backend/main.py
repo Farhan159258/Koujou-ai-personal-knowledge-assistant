@@ -1,5 +1,9 @@
+import shutil
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File
+from services.chunker import chunk_text
+from services.file_reader import extract_text
 import os
 
 app = FastAPI()
@@ -26,15 +30,23 @@ def home():
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
 
-    file_path = os.path.join(
-        UPLOAD_FOLDER,
-        file.filename
-    )
+    allowed_extensions = [".pdf", ".txt"]
 
-    with open(file_path, "wb") as buffer:
-        buffer.write(await file.read())
+    if not any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
+        return {"error": "Only PDF and TXT files are supported"}
+
+    filepath = f"uploads/{file.filename}"
+
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    text = extract_text(filepath)
+
+    chunks = chunk_text(text)
 
     return {
         "message": "Upload successful",
-        "filename": file.filename
+        "chunks_created": len(chunks),
+        "preview": chunks[:3]
     }
+    

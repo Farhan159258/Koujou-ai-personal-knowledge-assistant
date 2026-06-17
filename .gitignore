@@ -24,3 +24,25 @@ Thumbs.db
 
 # VS Code settings (optional)
 .vscode/
+
+# Python virtual environment
+backend/venv/
+
+# Uploaded files
+backend/uploads/
+
+# Next.js
+frontend/node_modules/
+frontend/.next/
+
+# Python
+backend/venv/
+backend/__pycache__/
+
+# Uploaded files
+backend/uploads/
+
+# Environment variables
+.env
+frontend/.env.local
+backend/.env
