@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File
 from services.chunker import chunk_text
 from services.file_reader import extract_text
+from services.vector_store import store_chunks
 import os
 
 app = FastAPI()
@@ -44,9 +45,12 @@ async def upload_file(file: UploadFile = File(...)):
 
     chunks = chunk_text(text)
 
+    stored = store_chunks(chunks)
+
     return {
         "message": "Upload successful",
         "chunks_created": len(chunks),
+        "stored_in_database": stored,
         "preview": chunks[:3]
-    }
+}
     
