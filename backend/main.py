@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File
 from services.chunker import chunk_text
 from services.file_reader import extract_text
-from services.vector_store import store_chunks
+from services.vector_store import store_chunks, search_documents
 import os
 
 app = FastAPI()
@@ -53,4 +53,15 @@ async def upload_file(file: UploadFile = File(...)):
         "stored_in_database": stored,
         "preview": chunks[:3]
 }
+
+
+@app.get("/ask")
+async def ask_question(query: str):
+
+    results = search_documents(query)
+
+    return {
+        "question": query,
+        "results": results
+    }
     

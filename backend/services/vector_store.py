@@ -1,4 +1,6 @@
 import chromadb
+import uuid
+
 from sentence_transformers import SentenceTransformer
 
 # Load embedding model once
@@ -18,8 +20,8 @@ def store_chunks(chunks):
 
     ids = []
 
-    for i in range(len(chunks)):
-        ids.append(f"chunk_{i}")
+    for _ in chunks:
+        ids.append(str(uuid.uuid4()))
 
     collection.add(
         ids=ids,
@@ -28,3 +30,15 @@ def store_chunks(chunks):
     )
 
     return len(chunks)
+
+
+def search_documents(query):
+
+    query_embedding = model.encode(query)
+
+    results = collection.query(
+        query_embeddings=[query_embedding.tolist()],
+        n_results=3
+    )
+
+    return results["documents"][0]

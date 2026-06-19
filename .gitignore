@@ -46,3 +46,28 @@ backend/uploads/
 .env
 frontend/.env.local
 backend/.env
+
+
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+backend/venv/
+
+# Uploads
+backend/uploads/
+
+# Chroma database
+backend/database/
+
+# Environment files
+.env
+
+# Node
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
