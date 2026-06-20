@@ -5,6 +5,7 @@ from fastapi import FastAPI, UploadFile, File
 from services.chunker import chunk_text
 from services.file_reader import extract_text
 from services.vector_store import store_chunks, search_documents
+from services.llm import generate_answer
 import os
 
 app = FastAPI()
@@ -60,8 +61,15 @@ async def ask_question(query: str):
 
     results = search_documents(query)
 
+    context = "\n".join(results)
+
+    answer = generate_answer(
+        query,
+        context
+    )
+
     return {
         "question": query,
-        "results": results
+        "answer": answer
     }
     
