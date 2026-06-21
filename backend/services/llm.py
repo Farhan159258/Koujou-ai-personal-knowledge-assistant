@@ -16,16 +16,20 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 def generate_answer(question, context):
 
     prompt = f"""
-    Answer the question using only the context below.
+You are an AI assistant.
 
-    Context:
-    {context}
+Answer ONLY from the provided context.
 
-    Question:
-    {question}
+Context:
+{context}
 
-    Answer:
-    """
+Question:
+{question}
+
+If the answer is not present in the context, reply exactly:
+
+Information not available in uploaded documents.
+"""
 
     response = model.generate_content(prompt)
 

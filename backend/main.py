@@ -6,6 +6,11 @@ from services.chunker import chunk_text
 from services.file_reader import extract_text
 from services.vector_store import store_chunks, search_documents
 from services.llm import generate_answer
+from pydantic import BaseModel
+
+class Question(BaseModel):
+    question: str
+    
 import os
 
 app = FastAPI()
@@ -24,10 +29,30 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-@app.get("/")
-def home():
-    return {"message": "Koujou AI backend running"}
+@app.post("/ask")
+async def ask_question(data: Question):
 
+    query = data.question
+
+    results = search_documents(query)
+
+    if not results:
+        return {
+            "question": query,
+            "answer": "No relevant information found."
+        }
+
+    context = "\n".join(results)
+
+    answer = generate_answer(
+        query,
+        context
+    )
+
+    return {
+        "question": query,
+        "answer": answer
+    }
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
