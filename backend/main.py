@@ -28,6 +28,12 @@ UPLOAD_FOLDER = "uploads"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@app.get("/")
+def home():
+    return {
+        "message": "Koujou AI backend running"
+    }
+
 
 @app.post("/ask")
 async def ask_question(data: Question):
@@ -81,20 +87,4 @@ async def upload_file(file: UploadFile = File(...)):
 }
 
 
-@app.get("/ask")
-async def ask_question(query: str):
-
-    results = search_documents(query)
-
-    context = "\n".join(results)
-
-    answer = generate_answer(
-        query,
-        context
-    )
-
-    return {
-        "question": query,
-        "answer": answer
-    }
     
