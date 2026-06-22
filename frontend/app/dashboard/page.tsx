@@ -1,37 +1,101 @@
+"use client";
+
+import { useState } from "react";
+
+import axios from "axios";
+
 export default function Dashboard() {
+
+  const [question, setQuestion] = useState("");
+
+  const [answer, setAnswer] = useState("");
+
+  const askQuestion = async () => {
+
+    if (!question.trim()) return;
+
+    try {
+
+      const response = await axios.post(
+
+        "http://127.0.0.1:8000/ask",
+
+        {
+          question
+        }
+
+      );
+
+      setAnswer(
+        response.data.answer
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      setAnswer(
+        "Unable to connect to backend"
+      );
+
+    }
+
+  };
+
   return (
 
-    <div className="p-8">
+    <div style={{padding:"40px"}}>
 
-      <h1 className="text-4xl font-bold">
+      <h1>Koujou AI</h1>
 
-        Dashboard
+      <textarea
 
-      </h1>
+        rows={5}
 
-      <div className="mt-8 grid grid-cols-3 gap-4">
+        style={{
+          width:"500px"
+        }}
 
-        <div className="rounded border p-6">
+        placeholder="Ask a question"
 
-          Documents
+        value={question}
 
-        </div>
+        onChange={(e)=>
 
-        <div className="rounded border p-6">
+          setQuestion(
+            e.target.value
+          )
 
-          Chats
+        }
 
-        </div>
+      />
 
-        <div className="rounded border p-6">
+      <br/><br/>
 
-          Upload
+      <button
 
-        </div>
+        onClick={askQuestion}
+
+      >
+
+        Ask
+
+      </button>
+
+      <div style={{
+
+        marginTop:"30px"
+
+      }}>
+
+        <h3>Answer</h3>
+
+        <p>{answer}</p>
 
       </div>
 
     </div>
 
   );
+
 }
