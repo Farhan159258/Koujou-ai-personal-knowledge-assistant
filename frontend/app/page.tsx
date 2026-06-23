@@ -1,21 +1,18 @@
+import Sidebar from "@/components/Sidebar";
+
+import ChatWindow from "@/components/ChatWindow";
+
 export default function Home() {
+
   return (
-    <main className="flex h-screen flex-col items-center justify-center">
 
-      <h1 className="text-6xl font-bold">
-        Koujou AI
-      </h1>
+    <div className="flex h-screen">
 
-      <p className="mt-4 text-lg text-gray-500">
-        Personal AI Knowledge Assistant
-      </p>
+      <Sidebar />
 
-      <button className="mt-8 rounded bg-black px-6 py-3 text-white">
+      <ChatWindow />
 
-        Get Started
+    </div>
 
-      </button>
-
-    </main>
   );
 }
