@@ -31,6 +31,8 @@ If the answer is not present in the context, reply exactly:
 Information not available in uploaded documents.
 """
 
-    response = model.generate_content(prompt)
-
-    return response.text
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"Gemini API error: {str(e)}"
