@@ -16,19 +16,21 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 def generate_answer(question, context):
 
     prompt = f"""
-You are an AI assistant.
+You are Koujou AI.
 
-Answer ONLY from the provided context.
+Use ONLY the supplied context to answer.
+
+Be concise, accurate and well structured.
+
+If the information is unavailable, reply:
+
+Information not available in uploaded documents.
 
 Context:
 {context}
 
 Question:
 {question}
-
-If the answer is not present in the context, reply exactly:
-
-Information not available in uploaded documents.
 """
 
     try:

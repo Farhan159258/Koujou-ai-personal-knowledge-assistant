@@ -1,19 +1,22 @@
+import os
 import shutil
 
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 from services.chunker import chunk_text
 from services.file_reader import extract_text
 from services.vector_store import store_chunks, search_documents
 from services.llm import generate_answer
-from pydantic import BaseModel
+
 
 class Question(BaseModel):
     question: str
-    
-import os
+
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -25,8 +28,8 @@ app.add_middleware(
 )
 
 UPLOAD_FOLDER = "uploads"
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 @app.get("/")
 def home():
@@ -44,21 +47,31 @@ async def ask_question(data: Question):
 
     if not results:
         return {
+            "success": False,
             "question": query,
             "answer": "No relevant information found."
         }
 
     context = "\n".join(results)
 
-    answer = generate_answer(
-        query,
-        context
-    )
+    try:
 
-    return {
-        "question": query,
-        "answer": answer
-    }
+        answer = generate_answer(query, context)
+
+        return {
+            "success": True,
+            "question": query,
+            "answer": answer,
+            "chunks_used": len(results)
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -66,7 +79,9 @@ async def upload_file(file: UploadFile = File(...)):
     allowed_extensions = [".pdf", ".txt"]
 
     if not any(file.filename.lower().endswith(ext) for ext in allowed_extensions):
-        return {"error": "Only PDF and TXT files are supported"}
+        return {
+            "error": "Only PDF and TXT files are supported"
+        }
 
     filepath = f"uploads/{file.filename}"
 
@@ -84,7 +99,4 @@ async def upload_file(file: UploadFile = File(...)):
         "chunks_created": len(chunks),
         "stored_in_database": stored,
         "preview": chunks[:3]
-}
-
-
-    
+    }
