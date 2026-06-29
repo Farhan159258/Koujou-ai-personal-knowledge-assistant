@@ -1,5 +1,7 @@
 "use client";
 
+import ReactMarkdown from "react-markdown";
+import "./dashboard.css";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
@@ -47,11 +49,8 @@ export default function Dashboard() {
       );
 
       setUploadedFile(file.name);
-
       localStorage.setItem("uploadedFile", file.name);
-
       setUploadStatus(response.data.message);
-
       setFile(null);
     } catch (error) {
       console.error(error);
@@ -62,31 +61,34 @@ export default function Dashboard() {
   const askQuestion = async () => {
     if (!question.trim()) return;
 
+    const userQuestion = question;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        content: userQuestion,
+      },
+    ]);
+
+    setQuestion("");
     setLoading(true);
 
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/ask`,
         {
-          question,
+          question: userQuestion,
         }
       );
-
-      const aiAnswer = response.data.answer;
 
       setMessages((prev) => [
         ...prev,
         {
-          role: "user",
-          content: question,
-        },
-        {
           role: "assistant",
-          content: aiAnswer,
+          content: response.data.answer,
         },
       ]);
-
-      setQuestion("");
     } catch (error) {
       console.error(error);
 
@@ -104,39 +106,32 @@ export default function Dashboard() {
 
   const clearChat = () => {
     setMessages([]);
-    setQuestion("");
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "900px",
-        margin: "40px auto",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <h1>Koujou AI</h1>
+    <div className="container">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <h2>⚡ Koujou AI</h2>
 
-      <p style={{ color: "#666" }}>
-        📄 Current Document:{" "}
-        <strong>
-          {uploadedFile || "No document uploaded"}
-        </strong>
-      </p>
+        <p
+          style={{
+            color: "#666",
+            fontSize: "14px",
+            marginBottom: "20px",
+          }}
+        >
+          Personal Knowledge Assistant
+        </p>
 
-      <hr style={{ margin: "20px 0" }} />
+        <div className="document-card">
+          <strong>Current Document</strong>
 
-      <h3>Upload Document</h3>
+          <p>
+            {uploadedFile || "No document uploaded"}
+          </p>
+        </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center",
-          marginBottom: "10px",
-        }}
-      >
         <input
           type="file"
           onChange={(e) => {
@@ -146,156 +141,182 @@ export default function Dashboard() {
           }}
         />
 
+        <br />
+        <br />
+
         <button
           onClick={uploadFile}
           disabled={!file}
         >
           Upload
         </button>
-      </div>
 
-      {uploadStatus && (
-        <p
-          style={{
-            color: "green",
-            marginBottom: "20px",
-          }}
-        >
-          {uploadStatus}
-        </p>
-      )}
-
-      <hr style={{ marginBottom: "20px" }} />
-
-      <div
-        style={{
-          height: "500px",
-          overflowY: "auto",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          padding: "20px",
-          background: "#fafafa",
-          marginBottom: "20px",
-        }}
-      >
-        {messages.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              marginTop: "100px",
-              color: "#666",
-            }}
-          >
-            <h2>👋 Welcome to Koujou AI</h2>
-
-            <p>Upload a document and start chatting.</p>
-
-            <br />
-
-            <p>Example questions:</p>
-
-            <p>• Summarize this document</p>
-
-            <p>• Explain the main concepts</p>
-
-            <p>• List important points</p>
-          </div>
-        )}
-
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              justifyContent:
-                message.role === "user"
-                  ? "flex-end"
-                  : "flex-start",
-              marginBottom: "20px",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "75%",
-                padding: "12px 16px",
-                borderRadius: "12px",
-                background:
-                  message.role === "user"
-                    ? "#dbeafe"
-                    : "#e5e7eb",
-              }}
-            >
-              <strong>
-                {message.role === "user"
-                  ? "You"
-                  : "Koujou AI"}
-              </strong>
-
-              <p
-                style={{
-                  whiteSpace: "pre-wrap",
-                  marginTop: "8px",
-                }}
-              >
-                {message.content}
-              </p>
-            </div>
-          </div>
-        ))}
-
-        {loading && (
+        {uploadStatus && (
           <p
             style={{
-              color: "#666",
-              fontStyle: "italic",
+              marginTop: "15px",
+              color: "green",
             }}
           >
-            🤖 Koujou AI is analyzing your document...
+            {uploadStatus}
           </p>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
-      <textarea
-        rows={4}
-        style={{
-          width: "100%",
-          padding: "15px",
-          borderRadius: "10px",
-          fontSize: "16px",
-          resize: "none",
-        }}
-        placeholder="Ask a question about your uploaded document..."
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            askQuestion();
-          }
-        }}
-      />
-
-      <br />
-      <br />
-
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-        }}
-      >
-        <button
-          onClick={askQuestion}
-          disabled={!question.trim() || loading}
+      {/* Chat Area */}
+      <div className="chat-area">
+        <div
+          style={{
+            padding: "20px",
+            borderBottom: "1px solid #e5e7eb",
+            background: "white",
+          }}
         >
-          {loading ? "Thinking..." : "Ask"}
-        </button>
+          <h2>💬 Chat</h2>
+        </div>
 
-        <button onClick={clearChat}>
-          Clear Chat
-        </button>
+        <div className="chat-window">
+          {messages.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "120px",
+                color: "#666",
+              }}
+            >
+              <h2>🚀 Welcome to Koujou AI</h2>
+
+              <p>
+                Powered by Gemini + RAG + ChromaDB
+              </p>
+
+              <br />
+
+              <p>
+                Upload a document and start asking questions.
+              </p>
+
+              <br />
+
+              <p>Examples:</p>
+
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                }}
+              >
+                <li>Summarize this document</li>
+                <li>Explain the main concepts</li>
+                <li>List key takeaways</li>
+                <li>Create interview questions</li>
+              </ul>
+            </div>
+          )}
+
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                justifyContent:
+                  message.role === "user"
+                    ? "flex-end"
+                    : "flex-start",
+                marginBottom: "20px",
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: "75%",
+                  padding: "12px 16px",
+                  borderRadius: "12px",
+
+                  background:
+                    message.role === "user"
+                      ? "#2563eb"
+                      : "#ffffff",
+
+                  color:
+                    message.role === "user"
+                      ? "#ffffff"
+                      : "#111827",
+
+                  border:
+                    message.role === "assistant"
+                      ? "1px solid #e5e7eb"
+                      : "none",
+                }}
+              >
+                <strong>
+                  {message.role === "user"
+                    ? "You"
+                    : "Koujou AI"}
+                </strong>
+
+                <div
+                  style={{
+                    marginTop: "8px",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  <ReactMarkdown>
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <p
+              style={{
+                color: "#666",
+                fontStyle: "italic",
+              }}
+            >
+              🤖 Koujou AI is analyzing your document...
+            </p>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="input-area">
+          <textarea
+            rows={4}
+            placeholder="Ask a question about your uploaded document..."
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+              }
+            }}
+          />
+
+          <br />
+          <br />
+
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+            }}
+          >
+            <button
+              onClick={askQuestion}
+              disabled={!question.trim() || loading}
+            >
+              {loading ? "Thinking..." : "Ask"}
+            </button>
+
+            <button onClick={clearChat}>
+              Clear Chat
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
